@@ -5,85 +5,179 @@ import java.util.Scanner;
 public class Main {
 	public static void main(String[] args) {
 		mainOperation();
+		System.out.println("Thanks for using the application. ");
 	}
-	
 
+	@SuppressWarnings("resource")
 	public static void mainOperation() {
+//		UserSystem admin = new UserSystem();
 		Scanner sc = new Scanner(System.in);
-		int ch = 0, pin=0, uid=1;
-		String username = "null";
+		Scanner str = new Scanner(System.in);
+		int ch = 0, opr = 1, pin = 0, uid = 1;
+		String username = "null", adminId = "", passcode = "";
 		UserSystem sys = new UserSystem();
-		System.out.println("Enter operation");
-		System.out.println("1. Login ");
-		System.out.println("2. Login as system administrator ");
-		System.out.println("3. About ");
-		System.out.print("Choice: ");
-//		ch = sc.nextInt();
+		sys = sys.addUser(sys, uid, 1234, "Lionel", 1000);
 
-		switch (ch) {
-		case 1: {
-			System.out.print("Enter User ID: ");
-			uid = sc.nextInt();
-			System.out.print("Enter PIN: ");
-			pin = sc.nextInt();
-						
-			if(sys.isLogged(sys, uid, pin)) {
-					// create session and display user operations.
-				int opr = 0;
-				sys.userOperation();
-				opr = sc.nextInt();
-				
-				switch(opr) {
-				case 1: {
-					sys.getUser(sys, uid); // complete . exception handling req.
-					break;
-				}
-				case 2: {
-					sys.updateBalance(sys, uid); // complete . exception handling req.
-					break;
-				}
-				default:
-					System.out.println("Invalid choice");
+		while (opr != 0) {
+
+			System.out.println("Enter operation. Enter zer0 to exit. ");
+			System.out.println("1. Login ");
+			System.out.println("2. Login as system administrator ");
+			System.out.println("3. About ");
+			System.out.print("Choice: ");
+			ch = sc.nextInt();
+
+			switch (ch) {
+			case 0: {
+				System.out.println("Exiting .. ");
+				break;
 			}
-				
+			case 1: {
+				System.out.print("Enter User ID: ");
+				uid = sc.nextInt();
+				System.out.print("Enter PIN: ");
+				pin = sc.nextInt();
+
+				if (sys.isLogged(sys, uid, pin)) {
+					// create session and display user operations.
+					while (opr != 0) {
+
+						sys.userOperation();
+						opr = sc.nextInt();
+
+						switch (opr) {
+						case 0: {
+							System.out.println("Exiting .. ");
+							break;
+						}
+						case 1: {
+							sys.getUser(sys, uid); // complete . exception handling req.
+							break;
+						}
+						case 2: {
+							sys.updateBalance(sys, uid, opr); // complete . exception handling req.
+							break;
+						}
+						case 3: {
+							sys.updateBalance(sys, uid, opr); // complete . exception handling req.
+							break;
+						}
+						case 4: {
+							System.out.println("Currently working on the functionality...");
+							break;
+						}
+
+						case 5: {
+							System.out.println("Enter operation. Enter zer0 to exit");
+							System.out.println("1. Update username ");
+							System.out.println("2. Update Pin ");
+							System.out.println("3.Exit ");
+							opr = sc.nextInt();
+
+							switch (opr) {
+							case 0: {
+								System.out.println("Exiting .. ");
+								break;
+							}
+							case 1: {
+								sys.updateUsername(sys, uid);
+								break;
+							}
+							case 2: {
+								sys.updatePin(sys, uid);
+								break;
+							}
+
+							case 3: {
+								System.out.println("Exiting .. ");
+							}
+
+							default:
+								System.out.println("Invalid operations. Exiting .. ");
+							}
+
+							break;
+						}
+
+						default:
+							System.out.println("Invalid choice");
+						}
+
+					}
 				} else {
 					System.out.println("Wrong Credentials..");
+				}
+				break;
 			}
-			break;
-		}
-		case 2: {
 
-			break;
-		}
-		case 3: {
+			case 2: {
+				System.out.print("Enter Admin ID: ");
+				adminId = str.nextLine();
+				System.out.print("Enter Password: ");
+				passcode = str.nextLine();
+				if (sys.adminLog(adminId, passcode)) {
+					while (opr != 0) {
+						sys.adminOperation();
+						opr = sc.nextInt(); // select a choice from admin menu
 
-			break;
-		}
-		default:
-			System.out.println("Invalid choice");
-		}
+						switch (opr) {
+						case 1: {
+							System.out.print("Enter User name: ");
+							username = str.nextLine();
+							uid = sys.size(sys) + 1;
+							sys = sys.addUser(sys, uid, 1234, username, 1000);
+							break;
+						}
 
+						case 2: {
+							System.out.print("Enter User id: ");
+							uid = sc.nextInt();
+							sys.deleteUserById(sys, uid);
+							break;
+						}
+
+						case 3: {
+							System.out.print("Enter User id: ");
+							uid = sc.nextInt();
+							sys.updateUsername(sys, uid);
+							break;
+						}
+
+						case 4: {
+							System.out.print("Enter User id: ");
+							uid = sc.nextInt();
+							sys.getUser(sys, uid);
+							break;
+						}
+
+						case 5: {
+							sys.printUsers(sys);
+						}
+
+						}
+
+					}
+				} else {
+					System.out.println("Wrong Credentials..");
+				}
+
+				break;
+			}
+
+			case 3: {
+				sys.about();
+				break;
+			}
+
+			default:
+				System.out.println("Invalid choice");
+			}
+
+			// if logged in as user, call user operations else admin operations. endless
+			// run.
+			return;
+		}
 		sc.close();
-		
-//		UserSystem users = new UserSystem(); 
-		// below are administrative operations . Write to a file every time a user is created..
-		sys = sys.addUser(sys, 1, 1234, "Lionel", 1000);
-		sys = sys.addUser(sys, 2, 1234, "Spyke", 369);
-		sys = sys.addUser(sys, 3, 1234, "James", 346);
-		sys = sys.addUser(sys, 4, 1234, "eCer", 520);
-		sys = sys.addUser(sys, 5, 1234, "kefreg", 10634);
-//		System.out.println();
-//		sys.printUsers(sys);
-//		sys.getUser(sys, 5);
-//		sys.deleteUserById(sys, 54);
-//		sys.printUsers(sys);
-		sys.updatePin(sys, 1);
-//		sys.printUsers(sys);
-//		System.out.println(sys);
-//		System.out.println(sys);
-
-		// if logged in as user, call user operations else admin operations. endless
-		// run.
-		return;
+		str.close();
 	}
 }

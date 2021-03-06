@@ -7,8 +7,10 @@ import java.util.Scanner;
 
 public class UserSystem {
 	// system administrator can carry out CRUD operations......
-	private final int admin_pin = 1234;
+	private final String adminID = "admin1";
+	private final String passcode = "pass1234";
 	User head;
+
 	class User {
 		private int id;
 		private int pin;
@@ -24,39 +26,48 @@ public class UserSystem {
 			balance = ubalance;
 			next = null;
 		}
-		
+
 		// user can carry out private operations after a session has been created.
 
 		public String toString() {
 			return "ID: " + this.id + " - Name: " + this.name + " - Balance: " + this.balance;
 		}
-	
+
 	} // end User.class.
-	
-	public int session() {
-		
-		
-		return 1;
+
+	public String getAminId() {
+		return this.adminID;
 	}
-	
-	public void adminOperation() {
-		System.out.println("Enter operation");
+
+	public String getPasscode() {
+		return this.passcode;
+	}
+
+	public boolean adminLog(String id, String pass) {
+		System.out.print(".........................");
+		if (this.adminID.equals(id) && this.passcode.equals(pass)) {
+			return true;
+		}
+		return false;
+	}
+
+	public void adminOperation() { // update db after every opr Except[4]
+		System.out.println("Enter operation. Enter zer0 to exit. ");
 		System.out.println("1. Add user ");
 		System.out.println("2. Delete user ");
 		System.out.println("3. Update user info. Exception [Pin] ");
 		System.out.println("4. Search user and print info ");
-		System.out.println("5. Show database with all user info"
-				+ ". NB: Pin is hidden for security reasons."); // write to a file.
-		
+		System.out.println("5. Show database with all user info" + ". NB: Pin is hidden for security reasons.");
 	}
-	
+
 	public void userOperation() {
-		System.out.println("Enter operation");
+		System.out.println("Enter operation. Enter zer0 to exit...");
 		System.out.println("1. Check account balance ");
 		System.out.println("2. Deposit ");
 		System.out.println("3. Withdraw ");
 		System.out.println("4. Calculate Interest ");
-		System.out.println("5. AboutMe . Download account info"); // write to a file.
+		System.out.println("5. Update your info. ");
+		System.out.println("6. AboutMe . Download account info (including previous transactions)"); // write to a file.
 	}
 
 	public int size(UserSystem users) {
@@ -85,7 +96,7 @@ public class UserSystem {
 		}
 
 		newuser.next = null;
-//		System.out.println("Success. Welcome " + newuser.name); // For debugging.
+		System.out.println("Successfully added \'" + newuser.name + "\' -- Uid: " + newuser.id); // For debugging.
 		return users;
 	}
 
@@ -102,27 +113,23 @@ public class UserSystem {
 
 		return;
 	}
-	
-//	public void getUserByName(UserSystem users, String username) {
-//		
-//	}
+
 	public boolean isLogged(UserSystem users, int uid, int pin) {
-	
+
 		User user = users.head;
-		boolean login = false;
 		while (user != null) {
 			if (user.id == uid) {
-				if(user.pin == pin) {
-					login = true;
-					break;
+				if (user.pin == pin) {
+					return true;
 				}
 			}
 			user = user.next;
 		}
-		
-		return login;
+
+		return false;
+
 	}
-	
+
 	public int getUser(UserSystem users, int uid) {
 		if (size(users) == 0) {
 			System.out.println("No users");
@@ -175,11 +182,15 @@ public class UserSystem {
 		}
 	}
 
+	// Or allow users to update their names.
+	@SuppressWarnings("resource")
 	public void updateUsername(UserSystem users, int uid) {
-		String newName = "newUser-" + uid;
+		Scanner str = new Scanner(System.in);
+		String newName = "newUser-" + uid; // previously
 		User currentUser = users.head;
 		if (getUser(users, uid) == -1) {
 			userError();
+			str.close();
 			return;
 		}
 
@@ -188,35 +199,44 @@ public class UserSystem {
 		}
 
 		if (currentUser != null) {
-			System.out.println("User: " + currentUser.name + " changed to " + newName);
+			System.out.print("Enter new User name: ");
+			newName = str.nextLine();
+			System.out.println("User: " + currentUser.name + " successfully changed to " + newName);
 			currentUser.name = newName;
 			return;
 		}
-
+//		str.close();
 	}
 
 	// works only when the user logs in or a current session has been created..
+	@SuppressWarnings("resource")
 	public void updatePin(UserSystem users, int uid) {
-		final String msg = "number of digits in PIN must be >=4 and PIN must be greater ZERO";
+		Scanner str = new Scanner(System.in);
+		final String msg = "Pin Error. number of digits in PIN must be >=4 and PIN must be greater ZERO";
 		int newpin = 54321; /// user has to enter new pin
 		if (getUser(users, uid) == -1) {
 			userError();
+			str.close();
 			return;
 		}
 		User user = users.head;
 
 		while (user != null) {
 			if (user.id == uid) {
+				System.out.println("pin must be alteast 4 digits and must be non-zer0: ");
+				System.out.print("Enter New pin: ");
+				newpin = str.nextInt();
 				if (newpin > 0) { // Scan new pin.. length must be >=4 digits.
 					if ((int) (Math.log10(newpin) + 1) >= 4) {
-						user.pin = newpin;
+						user.pin = newpin;// update pin
 						System.out.println("PIN successfully Updated. Don't share");
 						return;
-						// update pin
+
 					} else {
 						System.out.println(msg);
 						return;
 					}
+
 				} else {
 					System.out.println(msg);
 					return;
@@ -235,35 +255,55 @@ public class UserSystem {
 		System.out.println("No such user exist...");
 	}
 
-	public void updateBalance(UserSystem users, int uid) {
+	public void updateBalance(UserSystem users, int uid, int oprChoice) {
 		Scanner sc = new Scanner(System.in);
-		final String msg = "Amount is greater than balance";
-		int choice = 1, amount = 0;
-		// Cash in or cash out..
-		System.out.println("Enter amount to deposit");
-		amount = sc.nextInt();
-		
-//		System.out.println("1. Deposit ");
-//		System.out.println("2. Withdraw ");
-
-		if (getUser(users, uid) == -1) {
-			userError();
-			return;
-		}
-		
 		User user = users.head;
+		final String msg = "Not enough balance";
+		final String account_msg = "Account updated: New balance - " + user.balance;
+		int amount = 0;
 
 		while (user != null) {
 			if (user.id == uid) {
-				user.balance += amount;
+				if (oprChoice == 2) {
+					System.out.print("Enter amount to deposit:  ");
+					amount = sc.nextInt();
+					user.balance += amount;
+					System.out.print(account_msg);
+					System.out.println("  .Exiting.....");
+					sc.close();
+					return;
+				} else if (oprChoice == 3) {
+					System.out.print("Enter amount to Withdraw:  ");
+					amount = sc.nextInt();
+					sc.close();
+					if (amount > user.balance) {
+						System.out.print(msg);
+					} else {
+						user.balance -= amount;
+						System.out.print(account_msg);
+						System.out.println("  .Exiting.....");
+					}
+					return;
+				}
+				sc.close();
 				return;
 			}
 			user = user.next;
 		}
-		
-		if (user == null) {
-			System.out.println("No such user with uid [" + uid + "] exist");
-		}
+		sc.close();
 
+	}
+
+	public void calculateInterest(UserSystem users, int uid) {
+
+	}
+
+	public void about() {
+		System.out.println("...................***...........................****.......****......");
+		System.out.println("** ... C O M P L E T E  B A N K I N G  S Y S T E M .................**");
+		System.out.println("....................V1.0..............................................");
+		System.out.println("................... By ...............................................");
+		System.out.println("**................ SPYKE LIONEL.....................................**");
+		System.out.println(".........................................................*.........");
 	}
 }
